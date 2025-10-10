@@ -1,0 +1,40 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.graalvm.buildtools.native' version '0.10.2'
+}
+
+group = 'com.edu.ug'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+application {
+    mainClass = 'com.edu.ug.Main'
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+graalvmNative {
+    binaries {
+        main {
+            imageName.set('1_Zadanie_GraalVM')
+            buildArgs.addAll('--verbose', '-H:+ReportExceptionStackTraces')
+        }
+    }
+}
