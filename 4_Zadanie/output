@@ -1,0 +1,126 @@
+==========================================
+TEST SYSTEMU KLIENT-SERWER Z KOLEJKAMI FIFO
+==========================================
+
+Czyszczę pozostałości z poprzednich uruchomień...
+1. Uruchamiam serwer w tle...
+   Serwer uruchomiony z PID=9404
+[SERWER] Utworzono kolejkę: /tmp/server_fifo
+[SERWER] PID serwera: 9404
+[SERWER] Baza danych zawiera 5 rekordów
+[SERWER] Oczekuję na zapytania...
+
+==========================================
+TEST 1: Pojedyncze zapytanie
+==========================================
+Zapytanie o ID=2 (powinno zwrócić 'Nowak')...
+[KLIENT] PID: 9408, utworzono kolejkę: /tmp/client_fifo_9408
+[KLIENT] Wysyłam zapytanie o ID=2...
+[KLIENT] Oczekuję na odpowiedź...
+[SERWER] Otrzymano zapytanie: 23|2|/tmp/client_fifo_9408
+[SERWER] Przetwarzam zapytanie ID=2...
+[SERWER] Znaleziono: Nowak
+[SERWER] Wysłano odpowiedź do /tmp/client_fifo_9408
+[KLIENT] Otrzymano odpowiedź: Nowak
+[KLIENT] Nazwisko dla ID=2: Nowak
+
+==========================================
+TEST 2: Zapytanie o nieistniejący rekord
+==========================================
+Zapytanie o ID=99 (powinno zwrócić 'Nie ma')...
+[KLIENT] PID: 9413, utworzono kolejkę: /tmp/client_fifo_9413
+[KLIENT] Wysyłam zapytanie o ID=99...
+[KLIENT] Oczekuję na odpowiedź...
+[SERWER] Otrzymano zapytanie: 24|99|/tmp/client_fifo_9413
+[SERWER] Przetwarzam zapytanie ID=99...
+[SERWER] Brak rekordu dla ID=99
+[SERWER] Wysłano odpowiedź do /tmp/client_fifo_9413
+[KLIENT] Otrzymano odpowiedź: Nie ma
+[KLIENT] Rekord o ID=99 nie istnieje w bazie
+
+==========================================
+TEST 3: Wielodostęp - równoczesne zapytania
+==========================================
+Uruchamiam 3 klientów jednocześnie...
+(Serwer ma 2-sekundowe opóźnienie, więc zapytania będą czekać w kolejce)
+
+[KLIENT] PID: 9419, utworzono kolejkę: /tmp/client_fifo_9419
+[KLIENT] Wysyłam zapytanie o ID=1...
+[KLIENT] Oczekuję na odpowiedź...
+[SERWER] Otrzymano zapytanie: 23|1|/tmp/client_fifo_9419
+[SERWER] Przetwarzam zapytanie ID=1...
+[KLIENT] PID: 9423, utworzono kolejkę: /tmp/client_fifo_9423
+[KLIENT] Wysyłam zapytanie o ID=3...
+[KLIENT] Oczekuję na odpowiedź...
+Oczekuję na zakończenie wszystkich klientów...
+[KLIENT] PID: 9426, utworzono kolejkę: /tmp/client_fifo_9426
+[KLIENT] Wysyłam zapytanie o ID=5...
+[KLIENT] Oczekuję na odpowiedź...
+[SERWER] Znaleziono: Kowalski
+[SERWER] Wysłano odpowiedź do /tmp/client_fifo_9419
+[SERWER] Otrzymano zapytanie: 23|3|/tmp/client_fifo_9423
+[KLIENT] Otrzymano odpowiedź: Kowalski
+[KLIENT] Nazwisko dla ID=1: Kowalski
+[SERWER] Przetwarzam zapytanie ID=3...
+[SERWER] Znaleziono: Wiśniewski
+[SERWER] Wysłano odpowiedź do /tmp/client_fifo_9423
+[SERWER] Otrzymano zapytanie: 23|5|/tmp/client_fifo_9426
+[KLIENT] Otrzymano odpowiedź: Wiśniewski
+[KLIENT] Nazwisko dla ID=3: Wiśniewski
+[SERWER] Przetwarzam zapytanie ID=5...
+[SERWER] Znaleziono: Kowalczyk
+[SERWER] Wysłano odpowiedź do /tmp/client_fifo_9426
+[KLIENT] Otrzymano odpowiedź: Kowalczyk
+[KLIENT] Nazwisko dla ID=5: Kowalczyk
+Wszystkie klienty zakończyły działanie
+
+==========================================
+TEST 4: Obsługa sygnałów
+==========================================
+a) Test SIGHUP (powinien być zignorowany)...
+[SERWER] Zignorowano sygnał SIGHUP
+   Serwer dalej działa? Sprawdzam...
+[KLIENT] PID: 9435, utworzono kolejkę: /tmp/client_fifo_9435
+[KLIENT] Wysyłam zapytanie o ID=4...
+[KLIENT] Oczekuję na odpowiedź...
+[SERWER] Otrzymano zapytanie: 23|4|/tmp/client_fifo_9435
+[SERWER] Przetwarzam zapytanie ID=4...
+[SERWER] Znaleziono: Wójcik
+[SERWER] Wysłano odpowiedź do /tmp/client_fifo_9435
+[KLIENT] Otrzymano odpowiedź: Wójcik
+[KLIENT] Nazwisko dla ID=4: Wójcik
+
+b) Test SIGTERM (powinien być zignorowany)...
+[SERWER] Zignorowano sygnał SIGTERM
+   Serwer dalej działa? Sprawdzam...
+[KLIENT] PID: 9441, utworzono kolejkę: /tmp/client_fifo_9441
+[KLIENT] Wysyłam zapytanie o ID=1...
+[KLIENT] Oczekuję na odpowiedź...
+[SERWER] Otrzymano zapytanie: 23|1|/tmp/client_fifo_9441
+[SERWER] Przetwarzam zapytanie ID=1...
+[SERWER] Znaleziono: Kowalski
+[SERWER] Wysłano odpowiedź do /tmp/client_fifo_9441
+[KLIENT] Otrzymano odpowiedź: Kowalski
+[KLIENT] Nazwisko dla ID=1: Kowalski
+
+c) Test SIGUSR1 (powinien zakończyć działanie serwera)...
+   Wysyłam SIGUSR1 do serwera (PID=9404)...
+[SERWER] Otrzymano SIGUSR1 - kończę działanie
+[SERWER] Zakończono przez SIGUSR1
+[SERWER] Sprzątam zasoby...
+   OK: Serwer zakończył działanie
+
+==========================================
+TESTY ZAKOŃCZONE
+==========================================
+
+PODSUMOWANIE:
+- Test pojedynczego zapytania: OK
+- Test nieistniejącego rekordu: OK
+- Test wielodostępu (3 równoczesne zapytania): OK
+- Test sygnałów (SIGHUP, SIGTERM, SIGUSR1): OK
+
+Wszystkie testy przeszły pomyślnie!
+
+Finalne czyszczenie...
+Gotowe!
